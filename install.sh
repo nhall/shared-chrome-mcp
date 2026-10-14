@@ -17,15 +17,13 @@
 set -euo pipefail
 
 MCP_VERSION="${MCP_VERSION:-1.9.0}"
-SERVER_NAME="chrome-devtools"
 DENY_RULE="mcp__plugin_chrome-devtools-mcp_chrome-devtools"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-INSTALL_DIR="$HOME/.claude/chrome-mcp"
+. "$REPO_DIR/bin/common.sh"
 WRAPPER="$INSTALL_DIR/chrome-mcp-shared.sh"
 STATE="$INSTALL_DIR/install-state.json"
 SETTINGS="$HOME/.claude/settings.json"
 CLAUDE_JSON="$HOME/.claude.json"
-. "$REPO_DIR/bin/common.sh"
 
 say()  { printf '\033[1m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[33mwarning:\033[0m %s\n' "$*" >&2; }
@@ -55,8 +53,6 @@ edit_settings() {
 }
 
 has_deny_rule() { [ -f "$SETTINGS" ] && jq -e --arg r "$DENY_RULE" '(.permissions.deny // []) | index($r)' "$SETTINGS" >/dev/null; }
-current_server() { jq -c --arg n "$SERVER_NAME" '.mcpServers[$n] // null' "$CLAUDE_JSON" 2>/dev/null || echo null; }
-is_our_server() { [ "$(jq -r '.command // ""' <<<"$1")" = "$WRAPPER" ]; }
 # A field of install-state.json, or null without one.
 install_state() { jq -c "$1" "$STATE" 2>/dev/null || echo null; }
 
@@ -77,15 +73,9 @@ uninstall() {
   for cmd in claude jq; do
     command -v "$cmd" >/dev/null || die "'$cmd' is required but not on PATH"
   done
-  server="$(current_server)"
-  # Use the overrides the server was registered with (or, if an earlier failed
-  # run already removed it, the copy install saved), so we find the right
-  # Chrome even if they aren't set in this shell.
-  local env
-  if is_our_server "$server"; then env="$(jq -c '.env // {}' <<<"$server")"; else env="$(install_state .registered_env)"; fi
-  eval "$(jq -r 'objects | to_entries[] | select(.key as $k | $ARGS.positional | index($k))
-    | "export \(.key)=\(.value | @sh)"' --args "${OVERRIDE_VARS[@]}" <<<"$env")"
-  . "$REPO_DIR/bin/common.sh"
+  # Find the right Chrome even if the overrides aren't set in this shell.
+  use_registered_overrides
+  server="$(registered_server)"
 
   if is_our_server "$server"; then
     backup "$CLAUDE_JSON"
@@ -149,7 +139,7 @@ fi
 # Record what was there before the first install, for uninstall. An existing
 # server that is already our wrapper means an install older than this file.
 if [ ! -f "$STATE" ]; then
-  server="$(current_server)"
+  server="$(registered_server)"
   legacy=false
   if is_our_server "$server"; then server=null; legacy=true; fi
   if [ -f "$SETTINGS" ]; then settings_created=false; else settings_created=true; fi
@@ -173,7 +163,7 @@ npm install --silent --no-audit --no-fund --prefix "$INSTALL_DIR" "chrome-devtoo
 
 # --- 3: user-scope MCP server ---------------------------------------------
 wanted="$(wanted_server)"
-if jq -en --argjson a "$(current_server)" --argjson b "$wanted" '$a == $b' >/dev/null; then
+if jq -en --argjson a "$(registered_server)" --argjson b "$wanted" '$a == $b' >/dev/null; then
   say "user-scope MCP server '$SERVER_NAME' already registered"
 else
   backup "$CLAUDE_JSON"

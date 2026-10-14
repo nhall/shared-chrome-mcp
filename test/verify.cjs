@@ -10,20 +10,16 @@
 
 const { spawn, execFile, execFileSync } = require('child_process');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 
-const WRAPPER = process.env.WRAPPER || `${os.homedir()}/.claude/chrome-mcp/chrome-mcp-shared.sh`;
-const COMMON = path.join(path.dirname(WRAPPER), 'common.sh');
-
-// Test what Claude Code runs: the overrides the server was registered with
-// (unless this shell sets them), and the port that results from them.
-try {
-  const env = JSON.parse(fs.readFileSync(`${os.homedir()}/.claude.json`, 'utf8')).mcpServers?.['chrome-devtools']?.env || {};
-  for (const k of ['CHROME_MCP_PORT', 'CHROME_MCP_PROFILE', 'CHROME_MCP_CHROME']) if (env[k] && !process.env[k]) process.env[k] = env[k];
-} catch {}
+const COMMON = path.join(__dirname, '../bin/common.sh');
 const fromCommon = fn => execFileSync('bash', ['-c', `. "$1" && ${fn}`, '_', COMMON]).toString();
-const PORT = fromCommon('echo "$PORT"').trim();
+
+// Test what Claude Code runs: the overrides the server was registered with.
+// The wrappers and common.sh calls below inherit them.
+const [PORT, PROFILE, CHROME, INSTALL_DIR] = fromCommon('use_registered_overrides && printf "%s\\n" "$PORT" "$PROFILE" "$CHROME" "$INSTALL_DIR"').split('\n');
+Object.assign(process.env, { CHROME_MCP_PORT: PORT, CHROME_MCP_PROFILE: PROFILE, CHROME_MCP_CHROME: CHROME });
+const WRAPPER = process.env.WRAPPER || path.join(INSTALL_DIR, 'chrome-mcp-shared.sh');
 const BASE = `http://127.0.0.1:${PORT}`;
 const TAG = `verify-${process.pid}`;
 

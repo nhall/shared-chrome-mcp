@@ -12,15 +12,13 @@
 # Needs the shared Chrome closed, since it checks that sessions launch it.
 
 set -u
-INSTALL_DIR="$HOME/.claude/chrome-mcp"
 MODEL="${E2E_MODEL:-haiku}"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/shared-chrome-e2e.XXXXXX")"
 TAG="e2e-$$"
 
-# Use the overrides the server is registered with, like verify.cjs does.
-eval "$(jq -r '.mcpServers["chrome-devtools"].env // {} | to_entries[]
-  | select(.key | test("^CHROME_MCP_(PORT|PROFILE|CHROME)$")) | "export \(.key)=\(.value | @sh)"' "$HOME/.claude.json")"
-. "$INSTALL_DIR/common.sh" || { echo "FAIL  not installed: run ./install.sh"; exit 1; }
+. "$(cd "$(dirname "$0")/.." && pwd)/bin/common.sh"
+[ -d "$INSTALL_DIR" ] || { echo "FAIL  not installed: run ./install.sh"; exit 1; }
+use_registered_overrides
 LOG="$INSTALL_DIR/wrapper.log"
 BASE="http://127.0.0.1:$PORT"
 

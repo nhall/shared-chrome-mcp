@@ -43,6 +43,8 @@ check "state records the earlier server" '[ "$(jq -c .prior_server "$A/.claude/c
 
 run "$A" "${OVR[@]}" "$INSTALL"
 check "re-running changes nothing and makes no backups" '[ "$(backups)" = 0 ]'
+check "the registered overrides win over the shell's" \
+  '[ "$(HOME="$A" CHROME_MCP_PORT=1 bash -c ". \"\$1\" && use_registered_overrides && echo \"\$PORT\"" _ "$REPO_DIR/bin/common.sh")" = 9461 ]'
 
 run "$A" "${OVR[@]}" "$A/.claude/chrome-mcp/ensure-chrome.sh"
 check "the installed launcher starts Chrome with the overrides" 'pgrep -f -- "--user-data-dir=$A/profile" >/dev/null'

@@ -125,7 +125,9 @@ too.
 
 These variables override the defaults. Export them before running `install.sh`: it uses them
 for its checks and writes them into the MCP server's `env`, so the wrapper uses
-the same values.
+the same values. Uninstall and the tests read them back from there
+(`use_registered_overrides` in `bin/common.sh`), so a registered value wins over
+one set in your shell.
 
 | Variable | Default |
 |---|---|
@@ -191,7 +193,7 @@ code you're testing), with the shared Chrome closed:
 | Tier | What it checks | Touches |
 |---|---|---|
 | `test/verify.sh` | Through raw MCP sessions: session start doesn't open Chrome; concurrent first calls launch it once; tabs are shared; it survives a session's process group being killed; a call right after quitting relaunches it; navigate-first sessions on a page-less Chrome work with no blank tabs left; Chrome never comes to the front | The shared Chrome (quits it only if it launched it and no other session has tabs) |
-| `test/install.sh` | Install and uninstall in throwaway home folders: overrides carried, symlinked settings and mode kept, earlier server restored, re-run is a no-op, a failed uninstall can be re-run, a deny rule that was already there is kept, someone else's server is left alone | Nothing real (its own profiles and ports) |
+| `test/install.sh` | Install and uninstall in throwaway home folders: overrides carried (and win over the shell's), symlinked settings and mode kept, earlier server restored, re-run is a no-op, a failed uninstall can be re-run, a deny rule that was already there is kept, someone else's server is left alone | Nothing real (its own profiles and ports) |
 | `test/e2e.sh` | Real `claude -p` sessions with your config: the relay loads, a session without browser use doesn't open Chrome, two sessions at once open their tabs in one Chrome launched once, nothing is refused, Chrome never comes to the front, the plugin's own Chrome never starts | The shared Chrome, and a few model calls (`E2E_MODEL`, default haiku) |
 
 `all.sh` refuses to run if the installed files differ from the repo. `e2e.sh`
@@ -205,7 +207,7 @@ Automation); without it they fail rather than pass silently.
 bin/chrome-mcp-shared.sh   the MCP server command; starts the relay
 bin/lazy-launch.cjs        stdio relay: launches Chrome on the first tool call, not at session start
 bin/ensure-chrome.sh       launches the shared Chrome in the background if it isn't running (lock, port safety check, blank page)
-bin/common.sh              defaults and the "is this the shared Chrome?" checks, shared by the scripts
+bin/common.sh              defaults, the registered overrides and the "is this the shared Chrome?" checks, shared by the scripts and tests
 install.sh                 install / update / --uninstall
 test/all.sh                runs the suite (add --e2e for the real-session tier)
 test/verify.sh             tier 1: multi-session check against the installed wrapper
