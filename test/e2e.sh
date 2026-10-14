@@ -24,7 +24,6 @@ BASE="http://127.0.0.1:$PORT"
 
 failures=0
 check() { if eval "$2"; then echo "PASS  $1"; else echo "FAIL  $1"; failures=$((failures + 1)); fi; }
-launches() { grep -c 'launching shared Chrome' "$LOG" 2>/dev/null || echo 0; }
 plugin_chrome() { pgrep -f -- "--user-data-dir=$HOME/.cache/chrome-devtools-mcp/chrome-profile" >/dev/null; }
 # Tabs are found by URL: a plain-text data URL survives a model's escaping.
 tab_url() { echo "data:text/plain,$TAG-$1"; }
@@ -80,17 +79,17 @@ echo "model: $MODEL   port: $PORT"
 echo
 LOG_START=$(( $(wc -l < "$LOG" 2>/dev/null || echo 0) + 1 ))
 new_log() { tail -n "+$LOG_START" "$LOG" 2>/dev/null; }
-L0=$(launches)
+L0=$(launch_count)
 session plain "Reply with the single word ready. Do not use any tools."
 check "a session that doesn't use the browser loads the relay" '[ "$(cat "$WORK/plain/relay")" = yes ]'
-check "...and doesn't open Chrome" '[ "$(launches)" = "$L0" ] && [ -z "$(shared_chrome_pids)" ]'
+check "...and doesn't open Chrome" '[ "$(launch_count)" = "$L0" ] && [ -z "$(shared_chrome_pids)" ]'
 
-L1=$(launches)
+L1=$(launch_count)
 # Wait for just these two: the focus sampler is a background job too.
 open_tab one & p1=$!; open_tab two & p2=$!; wait "$p1" "$p2"
 for s in one two; do has_tab "$s" || { echo "      retrying session $s: $(head -c 120 "$WORK/$s/out.txt" | tr '\n' ' ')"; open_tab "$s"; }; done
 check "two sessions using the browser at once each opened their tab" 'has_tab one && has_tab two'
-check "...in one Chrome, launched once" '[ "$(( $(launches) - L1 ))" = 1 ] && [ "$(shared_chrome_pids | wc -l | tr -d " ")" = 1 ]'
+check "...in one Chrome, launched once" '[ "$(( $(launch_count) - L1 ))" = 1 ] && [ "$(shared_chrome_pids | wc -l | tr -d " ")" = 1 ]'
 check "no tool call was refused" '! new_log | grep -q "tool call refused"'
 
 kill "$SAMPLER" 2>/dev/null

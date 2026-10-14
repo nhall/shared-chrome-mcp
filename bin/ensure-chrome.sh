@@ -74,7 +74,7 @@ fi
 
 if ! chrome_answers; then
   mkdir -p "$PROFILE"
-  log "launching shared Chrome on $PORT"
+  log "$LAUNCH_MARK on $PORT"
   ARGS=(--remote-debugging-port="$PORT" --remote-debugging-address=127.0.0.1
     --user-data-dir="$PROFILE" --no-first-run --no-default-browser-check)
   # The innermost .app bundle the binary is in, used only if the binary is

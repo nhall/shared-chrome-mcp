@@ -9,7 +9,6 @@
 // quits a Chrome it launched itself, and only while nothing else has tabs open.
 
 const { spawn, execFile, execFileSync } = require('child_process');
-const fs = require('fs');
 const path = require('path');
 
 const COMMON = path.join(__dirname, '../bin/common.sh');
@@ -19,7 +18,7 @@ const fromCommon = fn => execFileSync('bash', ['-c', `. "$1" && ${fn}`, '_', COM
 // The wrappers and common.sh calls below inherit them.
 const [PORT, PROFILE, CHROME, INSTALL_DIR] = fromCommon('use_registered_overrides && printf "%s\\n" "$PORT" "$PROFILE" "$CHROME" "$INSTALL_DIR"').split('\n');
 Object.assign(process.env, { CHROME_MCP_PORT: PORT, CHROME_MCP_PROFILE: PROFILE, CHROME_MCP_CHROME: CHROME });
-const WRAPPER = process.env.WRAPPER || path.join(INSTALL_DIR, 'chrome-mcp-shared.sh');
+const WRAPPER = path.join(INSTALL_DIR, 'chrome-mcp-shared.sh');
 const BASE = `http://127.0.0.1:${PORT}`;
 const TAG = `verify-${process.pid}`;
 
@@ -69,8 +68,7 @@ function session(name) {
 }
 
 // Launches recorded by ensure-chrome.sh, to count how often Chrome was started.
-const LOG = path.join(path.dirname(WRAPPER), 'wrapper.log');
-const launches = () => { try { return fs.readFileSync(LOG, 'utf8').split('\n').filter(l => l.includes('launching shared Chrome')).length; } catch { return 0; } };
+const launches = () => Number(fromCommon('launch_count'));
 const chromeUp = async () => { try { await fetch(`${BASE}/json/version`); return true; } catch { return false; } };
 // PIDs of the shared Chrome's main process, using the installed common.sh.
 const sharedChromePids = () => fromCommon('shared_chrome_pids').split('\n').filter(Boolean);

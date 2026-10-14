@@ -34,6 +34,10 @@ use_registered_overrides() {
   resolve_config
 }
 
+# ensure-chrome.sh logs this for every launch; the tests count it.
+LAUNCH_MARK="launching shared Chrome"
+launch_count() { local n; n="$(grep -c "$LAUNCH_MARK" "$INSTALL_DIR/wrapper.log" 2>/dev/null)"; echo "${n:-0}"; }
+
 # Something answers DevTools requests on the port.
 chrome_answers() { curl -s -m 1 "http://127.0.0.1:$PORT/json/version" >/dev/null; }
 
