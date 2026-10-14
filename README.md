@@ -1,8 +1,15 @@
 # shared-chrome-mcp
 
-Lets every Claude Code session on a Mac use the
+A small wrapper that makes the
 [Chrome DevTools MCP](https://github.com/ChromeDevTools/chrome-devtools-mcp)
-at the same time, in one shared Chrome, with logins that persist.
+work the way you'd expect it to out of the box: every Claude Code session on a
+Mac uses it at the same time, in one shared Chrome, with logins that persist.
+Chrome opens only when a session actually uses it, and stays in the background.
+
+It doesn't fork or replace the Chrome DevTools MCP. The real
+`chrome-devtools-mcp`, maintained by the Chrome DevTools team, runs underneath
+unchanged, at a pinned version you can upgrade. The wrapper only decides when
+Chrome starts and keeps it out of your way.
 
 ## The problem
 
@@ -167,7 +174,9 @@ one set in your shell.
 - **macOS only.** The launcher uses the macOS Chrome path and `/usr/bin/lockf`
   for its launch lock (a kernel lock, so a crashed launch can't leave it stuck).
 - **Version pin.** `chrome-devtools-mcp` is pinned to match the plugin. To
-  upgrade: `MCP_VERSION=x.y.z ./install.sh`.
+  try a newer [release](https://github.com/ChromeDevTools/chrome-devtools-mcp/releases):
+  `MCP_VERSION=x.y.z ./install.sh`, then `./test/all.sh`. The version each
+  release of this wrapper was tested with is in [CHANGELOG.md](CHANGELOG.md).
 
 ## Troubleshooting
 
@@ -219,6 +228,7 @@ test/verify.cjs            the check itself (minimal MCP stdio client)
 test/install.sh            tier 2: install / uninstall in throwaway home folders
 test/e2e.sh                tier 3: real `claude -p` sessions with your config
 AGENTS.md                  instructions for an agent doing the install
+CHANGELOG.md               release notes, with the chrome-devtools-mcp version each release was tested with
 LICENSE                    MIT
 ```
 

@@ -54,6 +54,20 @@ when it breaks:
 3. **Before committing**, run `./test/all.sh --e2e`. Commit only when it exits 0.
 4. **Update `README.md` in the same change** when behavior changes. Point at
    sections, files and commands; line numbers go stale.
+5. **Add a line under "Unreleased" in `CHANGELOG.md`** for anything a user
+   would notice: behavior, install, config, or the pinned `MCP_VERSION`.
+
+## Releasing
+
+Only when the user asks for a release, on `main` after `./test/all.sh --e2e`
+passes:
+
+1. In `CHANGELOG.md`, rename "Unreleased" to the new version, add the
+   `chrome-devtools-mcp` version it was tested with, and start a new empty
+   "Unreleased" above it. Update the compare links at the bottom.
+2. Commit, tag `vX.Y.Z`, push the tag, and create the GitHub release with that
+   version's changelog section as its notes
+   (`gh release create vX.Y.Z --notes-file <file>`).
 
 ## Uninstalling
 
