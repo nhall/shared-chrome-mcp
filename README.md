@@ -44,6 +44,10 @@ the next browser action relaunches it, even in the middle of a session.
   snapshots, screenshots and input all work on background pages. If Chrome has
   no pages (fresh launch, or you closed all its windows), a blank one is opened
   in the background first, so tools like `navigate_page` work.
+- **`chrome-devtools-mcp` stays in charge of the tools.** The relay knows only
+  `new_page` and `select_page` by name (the `TOOLS` table in
+  `bin/lazy-launch.cjs`). Every other tool, including any a new release adds, is
+  passed through unchanged.
 
 ## Install
 
