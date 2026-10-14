@@ -13,13 +13,19 @@ Tested with `chrome-devtools-mcp` 1.9.0.
 
 First release.
 
-- Every Claude Code session on a Mac shares one Chrome through the Chrome
-  DevTools MCP, with a dedicated profile so logins persist.
+- Every agent session on a Mac shares one Chrome through the Chrome DevTools
+  MCP, with a dedicated profile so logins persist. Works with any MCP client:
+  `install.sh` registers it with Claude Code, and the README gives the
+  registration for Codex, Gemini CLI and Cursor.
+- Installs to `~/.local/share/shared-chrome-mcp/` (moved from
+  `~/.claude/chrome-mcp/`, which `install.sh` migrates). `CHROME_MCP_*`
+  overrides are saved in `config.env` there, so every client finds the same
+  Chrome.
 - Chrome opens only on a session's first browser tool call, and stays in the
   background: launching it and tool calls never bring it to the front.
 - Concurrent sessions launch Chrome once, and it outlives the session that
   launched it.
-- `install.sh` registers the wrapper and hides the chrome-devtools plugin's own
+- With Claude Code, `install.sh` also hides the chrome-devtools plugin's own
   MCP server; `install.sh --uninstall` restores the config as it was.
 - Test suite: raw MCP sessions, sandboxed install/uninstall, and real
   `claude -p` sessions.

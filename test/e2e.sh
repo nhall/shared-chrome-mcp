@@ -12,13 +12,13 @@
 # Needs the shared Chrome closed, since it checks that sessions launch it.
 
 set -u
+command -v claude >/dev/null || { echo "SKIP  needs Claude Code (claude is not on PATH)"; exit 2; }
 MODEL="${E2E_MODEL:-haiku}"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/shared-chrome-e2e.XXXXXX")"
 TAG="e2e-$$"
 
 . "$(cd "$(dirname "$0")/.." && pwd)/bin/common.sh"
 [ -d "$INSTALL_DIR" ] || { echo "FAIL  not installed: run ./install.sh"; exit 1; }
-use_registered_overrides
 LOG="$INSTALL_DIR/wrapper.log"
 BASE="http://127.0.0.1:$PORT"
 

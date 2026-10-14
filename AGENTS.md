@@ -1,7 +1,7 @@
 # Agent guide: shared-chrome-mcp
 
-This repo makes every Claude Code session on a Mac share one Chrome through the
-Chrome DevTools MCP. `README.md` explains the design, lists what `install.sh`
+This repo makes every agent session on a Mac (Claude Code, Codex, Gemini CLI,
+Cursor, any MCP client) share one Chrome through the Chrome DevTools MCP. `README.md` explains the design, lists what `install.sh`
 changes, and describes the tests.
 
 ## Rules
@@ -13,6 +13,8 @@ changes, and describes the tests.
 - **Change config through `install.sh`**, which backs up and merges
   `~/.claude.json` and `~/.claude/settings.json`. If a change truly needs a hand
   edit, read the file first and merge into it, keeping everything else as it was.
+  Register other clients as "Other MCP clients" in `README.md` says, with the
+  client's own `mcp add` command where it has one.
 - **Change behavior here, in this repo.** The plugin's cache
   (`~/.claude/plugins/cache/`) is rewritten by every plugin update, so leave it
   untouched.
@@ -26,11 +28,13 @@ changes, and describes the tests.
 2. **Run `./install.sh`** from the repo root (re-running is safe). If its
    preflight stops on something missing, tell the user what it is and how to get
    it, and ask before installing system packages yourself. Done when it prints
-   "installed. Next:".
+   "installed. Next:". It registers with Claude Code if `claude` is on PATH.
+   For any other client the user runs, register it as "Other MCP clients" in
+   `README.md` says, after showing them that change too.
 3. **Verify with `./test/all.sh`** with the shared Chrome closed: the output shows
    `chrome already running: false`. If it's running, ask the user before quitting
    it. Done when every tier in the summary shows PASS and it exits 0.
-4. **Tell the user** to restart their open Claude Code sessions, and to log into
+4. **Tell the user** to restart their open agent sessions, and to log into
    the sites they test once in the shared Chrome (its Dock icon brings it
    forward).
 

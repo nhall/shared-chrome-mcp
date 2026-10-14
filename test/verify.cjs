@@ -1,6 +1,6 @@
 // Verifies the installed wrapper: several independent MCP "sessions" share one
 // Chrome. Each session is a separate wrapper process speaking MCP over stdio,
-// exactly as a Claude Code session would run it.
+// exactly as an MCP client session (Claude Code, Codex, …) would run it.
 //
 //   node test/verify.cjs   (or test/verify.sh)
 //
@@ -14,10 +14,8 @@ const path = require('path');
 const COMMON = path.join(__dirname, '../bin/common.sh');
 const fromCommon = fn => execFileSync('bash', ['-c', `. "$1" && ${fn}`, '_', COMMON]).toString();
 
-// Test what Claude Code runs: the overrides the server was registered with.
-// The wrappers and common.sh calls below inherit them.
-const [PORT, PROFILE, CHROME, INSTALL_DIR] = fromCommon('use_registered_overrides && printf "%s\\n" "$PORT" "$PROFILE" "$CHROME" "$INSTALL_DIR"').split('\n');
-Object.assign(process.env, { CHROME_MCP_PORT: PORT, CHROME_MCP_PROFILE: PROFILE, CHROME_MCP_CHROME: CHROME });
+// The overrides install.sh saved apply here as they do for every client.
+const [PORT, INSTALL_DIR] = fromCommon('printf "%s\\n" "$PORT" "$INSTALL_DIR"').split('\n');
 const WRAPPER = path.join(INSTALL_DIR, 'chrome-mcp-shared.sh');
 const BASE = `http://127.0.0.1:${PORT}`;
 const TAG = `verify-${process.pid}`;
@@ -25,7 +23,7 @@ const TAG = `verify-${process.pid}`;
 const sessions = [];
 function session(name) {
   // Its own process group, so close() can signal the whole group the way a
-  // session's processes may be torn down when Claude Code exits.
+  // session's processes may be torn down when its client exits.
   const p = spawn(WRAPPER, [], { stdio: ['pipe', 'pipe', 'pipe'], detached: true });
   let buf = '', id = 0, err = '';
   const waits = {};

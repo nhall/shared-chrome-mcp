@@ -1,4 +1,4 @@
-// Stdio relay between Claude Code and chrome-devtools-mcp.
+// Stdio relay between an MCP client (Claude Code, Codex, …) and chrome-devtools-mcp.
 //
 // chrome-devtools-mcp (in --browserUrl mode) starts and lists its tools without
 // a browser, and only connects on the first tool call. This relay passes every

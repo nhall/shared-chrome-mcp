@@ -9,7 +9,7 @@
 # existing page, so make sure there is one. Chrome is detached, so it outlives the session that launched it — quit it
 # like any app and the next tool call relaunches it.
 #
-# Env overrides: CHROME_MCP_PORT, CHROME_MCP_PROFILE, CHROME_MCP_CHROME (Chrome binary).
+# Overrides: CHROME_MCP_PORT, CHROME_MCP_PROFILE, CHROME_MCP_CHROME (see common.sh).
 
 set -u
 DIR="$(cd "$(dirname "$0")" && pwd)"
