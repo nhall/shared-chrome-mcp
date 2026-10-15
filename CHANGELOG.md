@@ -2,7 +2,8 @@
 
 Notable changes to shared-chrome-mcp. Versions follow
 [Semantic Versioning](https://semver.org/): the interface is `install.sh`, its
-`CHROME_MCP_*` and `MCP_VERSION` variables, and the behavior in the README.
+`CHROME_MCP_*` and `MCP_VERSION` variables, and the behavior the README and
+`docs/` describe.
 Each release lists the `chrome-devtools-mcp` version it was tested with.
 
 ## [Unreleased]
@@ -15,8 +16,9 @@ First release.
 
 - Every agent session on a Mac shares one Chrome through the Chrome DevTools
   MCP, with a dedicated profile so logins persist. Works with any MCP client:
-  `install.sh` registers it with Claude Code, and the README gives the
-  registration for Codex, Gemini CLI and Cursor.- Installs to `~/.local/share/shared-chrome-mcp/` (moved from
+  `install.sh` registers it with Claude Code, and docs/clients.md gives the
+  registration for Codex, Gemini CLI and Cursor.
+- Installs to `~/.local/share/shared-chrome-mcp/` (moved from
   `~/.claude/chrome-mcp/`, which `install.sh` migrates). `CHROME_MCP_*`
   overrides are saved in `config.env` there, so every client finds the same
   Chrome.

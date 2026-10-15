@@ -1,8 +1,11 @@
 # Agent guide: shared-chrome-mcp
 
 This repo makes every agent session on a Mac (Claude Code, Codex, Gemini CLI,
-Cursor, any MCP client) share one Chrome through the Chrome DevTools MCP. `README.md` explains the design, lists what `install.sh`
-changes, and describes the tests.
+Cursor, any MCP client) share one Chrome through the Chrome DevTools MCP.
+`README.md` is the short user guide; `docs/` holds the details: what
+`install.sh` changes (`docs/install.md`), other clients (`docs/clients.md`),
+the design (`docs/how-it-works.md`), troubleshooting, and the tests
+(`docs/development.md`).
 
 ## Rules
 
@@ -13,8 +16,8 @@ changes, and describes the tests.
 - **Change config through `install.sh`**, which backs up and merges
   `~/.claude.json` and `~/.claude/settings.json`. If a change truly needs a hand
   edit, read the file first and merge into it, keeping everything else as it was.
-  Register other clients as "Other MCP clients" in `README.md` says, with the
-  client's own `mcp add` command where it has one.
+  Register other clients as `docs/clients.md` says, with the client's own
+  `mcp add` command where it has one.
 - **Change behavior here, in this repo.** The plugin's cache
   (`~/.claude/plugins/cache/`) is rewritten by every plugin update, so leave it
   untouched.
@@ -24,13 +27,13 @@ changes, and describes the tests.
 ## Installing for a user
 
 1. **Show the user what will change**: the "What `install.sh` changes" table in
-   `README.md`. Continue once they agree.
+   `docs/install.md`. Continue once they agree.
 2. **Run `./install.sh`** from the repo root (re-running is safe). If its
    preflight stops on something missing, tell the user what it is and how to get
    it, and ask before installing system packages yourself. Done when it prints
    "installed. Next:". It registers with Claude Code if `claude` is on PATH.
-   For any other client the user runs, register it as "Other MCP clients" in
-   `README.md` says, after showing them that change too.
+   For any other client the user runs, register it as `docs/clients.md` says,
+   after showing them that change too.
 3. **Verify with `./test/all.sh`** with the shared Chrome closed: the output shows
    `chrome already running: false`. If it's running, ask the user before quitting
    it. Done when every tier in the summary shows PASS and it exits 0.
@@ -54,10 +57,12 @@ when it breaks:
    shared Chrome closed. `all.sh` refuses to run while the installed copy differs
    from the repo.
 2. **When you add behavior**, add the check that would go red without it to the
-   matching tier ("Tests" in `README.md`).
+   matching tier ("Tests" in `docs/development.md`).
 3. **Before committing**, run `./test/all.sh --e2e`. Commit only when it exits 0.
-4. **Update `README.md` in the same change** when behavior changes. Point at
-   sections, files and commands; line numbers go stale.
+4. **Update the docs in the same change** when behavior changes. Point at
+   sections, files and commands; line numbers go stale. Keep `README.md` short:
+   what it is, install, what users must know, uninstall, and links. Details go
+   in `docs/`. It's public, so no test status or to-do notes.
 5. **Add a line under "Unreleased" in `CHANGELOG.md`** for anything a user
    would notice: behavior, install, config, or the pinned `MCP_VERSION`.
 
@@ -82,4 +87,4 @@ only once the user confirms.
 ## When something fails
 
 Install, a test, or a tool call ("Shared Chrome is unavailable: …"): see
-"Troubleshooting" in `README.md`.
+`docs/troubleshooting.md`.

@@ -14,7 +14,7 @@
 #   3. Registers a user-scope MCP server "chrome-devtools" pointing at the wrapper
 #   4. Adds a deny rule hiding the chrome-devtools plugin's own MCP server
 #      (the plugin stays enabled so its skills still load)
-# Other MCP clients are registered by hand (README, "Other MCP clients").
+# Other MCP clients are registered by hand (docs/clients.md).
 # Each config file is backed up before it is changed. The first install records
 # what it changed in install-state.json, so uninstall restores the config exactly.
 
@@ -244,7 +244,7 @@ remove_legacy
 say "installed. Next:"
 cat <<EOF
    - Other MCP clients (Codex, Gemini CLI, …): register a stdio server named
-     '$SERVER_NAME' with the command below. See "Other MCP clients" in README.md.
+     '$SERVER_NAME' with the command below. See docs/clients.md.
        $WRAPPER
    - Restart any open sessions (they keep their old MCP config).
    - Verify:  $REPO_DIR/test/all.sh   (with the shared Chrome closed)
