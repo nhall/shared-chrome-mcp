@@ -4,6 +4,9 @@
 # Overrides: CHROME_MCP_PORT, CHROME_MCP_PROFILE, CHROME_MCP_CHROME (Chrome
 # binary). install.sh saves them in CONFIG, so every MCP client that runs the
 # wrapper finds the same Chrome. One set in the environment wins over the file.
+#
+# The variables below are read by the scripts that source this file.
+# shellcheck shell=bash disable=SC2034
 
 SERVER_NAME="chrome-devtools"
 INSTALL_DIR="$HOME/.local/share/shared-chrome-mcp"

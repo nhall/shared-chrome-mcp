@@ -38,7 +38,8 @@ has_claude() { command -v claude >/dev/null; }
 
 backup() {
   [ -f "$1" ] || return 0
-  local dest="$1.bak-shared-chrome-$(date +%Y%m%d%H%M%S)"
+  local dest
+  dest="$1.bak-shared-chrome-$(date +%Y%m%d%H%M%S)"
   cp "$1" "$dest"
   say "backed up $1 -> $dest"
 }

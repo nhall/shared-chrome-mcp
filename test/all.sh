@@ -1,7 +1,7 @@
 #!/bin/bash
 # Runs the test suite. Run it after every change, and before committing.
 #
-#   test/all.sh          verify.sh (shared Chrome, via raw MCP) + install.sh (sandboxed)
+#   test/all.sh          lint.sh (ShellCheck) + verify.sh (shared Chrome, via raw MCP) + install.sh (sandboxed)
 #   test/all.sh --e2e    ...plus e2e.sh (real Claude Code sessions; slower, uses the model)
 #
 # Re-install first (./install.sh) so verify.sh and e2e.sh test the current code.
@@ -36,6 +36,7 @@ run() {
   echo
 }
 
+run lint.sh
 run verify.sh
 run install.sh
 [ "${1:-}" = "--e2e" ] && run e2e.sh

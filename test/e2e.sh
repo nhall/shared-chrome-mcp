@@ -11,6 +11,8 @@
 #
 # Needs the shared Chrome closed, since it checks that sessions launch it.
 
+# check() reads some variables only inside the strings it evals.
+# shellcheck disable=SC2034
 set -u
 command -v claude >/dev/null || { echo "SKIP  needs Claude Code (claude is not on PATH)"; exit 2; }
 MODEL="${E2E_MODEL:-haiku}"
