@@ -85,23 +85,34 @@ write_config() {
 
 # Bring an install from before 1.0.0 (in ~/.claude/chrome-mcp) to INSTALL_DIR:
 # its record of what install changed, its log, and the overrides it registered
-# in Claude Code. The old folder is removed once the new install is in place.
+# in Claude Code. The old folder goes once nothing runs from it
+# (remove_legacy).
 migrate_legacy() {
-  [ -d "$LEGACY_DIR" ] || return 0
+  # CONFIG exists once a migration (or any 1.0.0 install) has run.
+  [ -d "$LEGACY_DIR" ] && [ ! -f "$CONFIG" ] || return 0
   mkdir -p "$INSTALL_DIR"
   local f env server
   for f in install-state.json wrapper.log; do
     if [ -f "$LEGACY_DIR/$f" ] && [ ! -f "$INSTALL_DIR/$f" ]; then cp "$LEGACY_DIR/$f" "$INSTALL_DIR/$f"; fi
   done
-  if [ ! -f "$CONFIG" ]; then
-    server="$(registered_server)"
-    if is_our_server "$server"; then env="$(jq -c '.env // {}' <<<"$server")"; else env="$(install_state '.registered_env // {}')"; fi
-    eval "$(jq -r 'objects | to_entries[] | select(.key as $k | $ARGS.positional | index($k))
-      | "[ -n \"${\(.key):-}\" ] || export \(.key)=\(.value | @sh)"' --args "${OVERRIDE_VARS[@]}" <<<"$env")"
-    write_config
-    . "$REPO_DIR/bin/common.sh"
-  fi
+  server="$(registered_server)"
+  if is_our_server "$server"; then env="$(jq -c '.env // {}' <<<"$server")"; else env="$(install_state '.registered_env // {}')"; fi
+  eval "$(jq -r 'objects | to_entries[] | select(.key as $k | $ARGS.positional | index($k))
+    | "[ -n \"${\(.key):-}\" ] || export \(.key)=\(.value | @sh)"' --args "${OVERRIDE_VARS[@]}" <<<"$env")"
+  write_config
+  . "$REPO_DIR/bin/common.sh"
   say "moved the install from $LEGACY_DIR to $INSTALL_DIR"
+}
+
+# Sessions started before the move still run the old copy, so it stays until
+# they have all ended; a later install.sh removes it.
+remove_legacy() {
+  [ -d "$LEGACY_DIR" ] || return 0
+  if pgrep -f -- "$LEGACY_DIR/lazy-launch.cjs" >/dev/null; then
+    say "kept $LEGACY_DIR for sessions still running from it; restart them and re-run install.sh to remove it"
+  else
+    rm -rf "$LEGACY_DIR"
+  fi
 }
 
 # Runs with set -e in force: if restoring anything fails, it stops before
@@ -228,7 +239,7 @@ if has_claude; then
 else
   say "Claude Code not found; skipped registering with it"
 fi
-rm -rf "$LEGACY_DIR"
+remove_legacy
 
 say "installed. Next:"
 cat <<EOF

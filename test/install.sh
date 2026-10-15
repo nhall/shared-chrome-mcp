@@ -129,10 +129,15 @@ echo "old log line" > "$OLD/wrapper.log"
 jq -n --arg c "$OLD/chrome-mcp-shared.sh" --arg p "$E/profile" \
   '{mcpServers: {"chrome-devtools": {type: "stdio", command: $c, args: [], env: {CHROME_MCP_PORT: "9465", CHROME_MCP_PROFILE: $p}}}}' > "$E/.claude.json"
 jq -n --arg r "$DENY" '{permissions: {deny: [$r]}}' > "$E/.claude/settings.json"
+# A session started before the move, still running the old relay.
+( exec -a "node $OLD/lazy-launch.cjs" sleep 60 ) & OLD_RELAY=$!
 run "$E" "$INSTALL"
 check "install succeeds" '[ $RC -eq 0 ] || ! cat "$WORK/last.log"'
-check "the old folder is gone, its state and log moved" \
-  '[ ! -e "$OLD" ] && [ "$(jq .settings_created "$NEW/install-state.json")" = true ] && grep -q "old log line" "$NEW/wrapper.log"'
+check "its state and log moved, the old folder kept while a session runs from it" \
+  '[ -d "$OLD" ] && [ "$(jq .settings_created "$NEW/install-state.json")" = true ] && grep -q "old log line" "$NEW/wrapper.log"'
+kill "$OLD_RELAY"; wait "$OLD_RELAY" 2>/dev/null
+run "$E" "$INSTALL"
+check "a re-run once that session ends removes the old folder" '[ $RC -eq 0 ] && [ ! -e "$OLD" ]'
 check "the overrides it registered are saved" 'grep -qx "CHROME_MCP_PORT=9465" "$NEW/config.env"'
 check "the server points at the new wrapper" '[ "$(server "$E" | jq -r .command)" = "$NEW/chrome-mcp-shared.sh" ]'
 run "$E" "$INSTALL" --uninstall

@@ -126,7 +126,9 @@ backups. The first install records what was there before in
 `~/.local/share/shared-chrome-mcp/install-state.json`, so uninstall can restore it.
 `install.sh` is safe to re-run; it's also how you update. An install from
 before 1.0.0 (in `~/.claude/chrome-mcp/`) is moved to the new folder, with its
-record and overrides, and the Claude Code server repointed.
+record and overrides, and the Claude Code server repointed. Sessions started
+before that keep running the old copy, so the old folder stays until they've
+ended; restart them and re-run `install.sh` to remove it.
 
 ### Manual install (no script)
 
