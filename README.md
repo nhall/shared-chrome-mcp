@@ -95,22 +95,6 @@ that client keeps launching its own Chrome.
 Every client shares the same Chrome, port and profile, read from
 `~/.local/share/shared-chrome-mcp/config.env`.
 
-How far each client has been tested (October 2026; the test suite itself drives
-Claude Code only):
-
-- **Gemini CLI 0.64.0:** real sessions, by hand with the checks `test/e2e.sh`
-  runs: no Chrome for a session that doesn't use it, two sessions at once open
-  their tabs in one Chrome launched once, a later session sees them, nothing
-  refused, Chrome never in front. Sign-in with a personal Google account no
-  longer works for Gemini CLI ("This client is no longer supported for Gemini
-  Code Assist for individuals"); use a Gemini API key (`GEMINI_API_KEY`, from
-  Google AI Studio) or Vertex AI. Homebrew's `gemini-cli` can lag far behind
-  npm's `@google/gemini-cli`.
-- **Cursor `agent` CLI 2026.10.14:** registration, and the client starting the
-  wrapper and listing its tools without opening Chrome. Not real sessions.
-- **Codex CLI 0.162.1:** registration only (`codex mcp list` doesn't start
-  servers). Not real sessions.
-
 ## What `install.sh` changes
 
 | Change | Location |

@@ -16,9 +16,7 @@ First release.
 - Every agent session on a Mac shares one Chrome through the Chrome DevTools
   MCP, with a dedicated profile so logins persist. Works with any MCP client:
   `install.sh` registers it with Claude Code, and the README gives the
-  registration for Codex, Gemini CLI and Cursor. Tested in real sessions with
-  Claude Code and Gemini CLI 0.64.0; Cursor and Codex registration checked.
-- Installs to `~/.local/share/shared-chrome-mcp/` (moved from
+  registration for Codex, Gemini CLI and Cursor.- Installs to `~/.local/share/shared-chrome-mcp/` (moved from
   `~/.claude/chrome-mcp/`, which `install.sh` migrates). `CHROME_MCP_*`
   overrides are saved in `config.env` there, so every client finds the same
   Chrome.
