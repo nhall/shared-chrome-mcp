@@ -5,6 +5,8 @@
 #
 #   test/install.sh
 
+# check() reads some variables only inside the strings it evals.
+# shellcheck disable=SC2034
 set -u
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 INSTALL="$REPO_DIR/install.sh"
