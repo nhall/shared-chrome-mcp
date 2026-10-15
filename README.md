@@ -90,11 +90,26 @@ that client keeps launching its own Chrome.
 |---|---|---|
 | Codex | `codex mcp add chrome-devtools -- ~/.local/share/shared-chrome-mcp/chrome-mcp-shared.sh` (writes `~/.codex/config.toml`) | `codex mcp list` |
 | Gemini CLI | `gemini mcp add -s user chrome-devtools ~/.local/share/shared-chrome-mcp/chrome-mcp-shared.sh` (writes `~/.gemini/settings.json`; without `-s user` it's per project) | `gemini mcp list` |
-| Cursor (editor and `agent` CLI) | Add it under `mcpServers` in `~/.cursor/mcp.json`: `"chrome-devtools": {"type": "stdio", "command": "/Users/you/.local/share/shared-chrome-mcp/chrome-mcp-shared.sh", "args": []}` | `agent mcp list` |
+| Cursor (editor and `agent` CLI) | Add it under `mcpServers` in `~/.cursor/mcp.json`: `"chrome-devtools": {"type": "stdio", "command": "/Users/you/.local/share/shared-chrome-mcp/chrome-mcp-shared.sh", "args": []}` | `agent mcp list` (older installs: `cursor-agent`) |
 
-These come from each client's docs. The test suite drives Claude Code only, so
-the other rows haven't been through it. Every client shares the same Chrome,
-port and profile, read from `~/.local/share/shared-chrome-mcp/config.env`.
+Every client shares the same Chrome, port and profile, read from
+`~/.local/share/shared-chrome-mcp/config.env`.
+
+How far each client has been tested (October 2026; the test suite itself drives
+Claude Code only):
+
+- **Gemini CLI 0.64.0:** real sessions, by hand with the checks `test/e2e.sh`
+  runs: no Chrome for a session that doesn't use it, two sessions at once open
+  their tabs in one Chrome launched once, a later session sees them, nothing
+  refused, Chrome never in front. Sign-in with a personal Google account no
+  longer works for Gemini CLI ("This client is no longer supported for Gemini
+  Code Assist for individuals"); use a Gemini API key (`GEMINI_API_KEY`, from
+  Google AI Studio) or Vertex AI. Homebrew's `gemini-cli` can lag far behind
+  npm's `@google/gemini-cli`.
+- **Cursor `agent` CLI 2026.10.14:** registration, and the client starting the
+  wrapper and listing its tools without opening Chrome. Not real sessions.
+- **Codex CLI 0.162.1:** registration only (`codex mcp list` doesn't start
+  servers). Not real sessions.
 
 ## What `install.sh` changes
 
