@@ -1,4 +1,4 @@
-// Stdio relay between Claude Code and chrome-devtools-mcp.
+// Stdio relay between an MCP client (Claude Code, Codex, …) and chrome-devtools-mcp.
 //
 // chrome-devtools-mcp (in --browserUrl mode) starts and lists its tools without
 // a browser, and only connects on the first tool call. This relay passes every
@@ -51,14 +51,30 @@ server.on('exit', (code, signal) => {
   setTimeout(exit, 1000);
 });
 
-// Resolves to null once Chrome is ready for this tool, or to the reason it isn't.
-const ensureChrome = tool => new Promise(resolve => {
+// The only chrome-devtools-mcp tools the relay knows by name. Any other tool
+// (including ones a new release adds) needs an existing page and is passed
+// through unchanged. keepInBackground rewrites arguments that would bring Chrome
+// to the front and returns true if it changed any; every page stays usable in
+// the background (snapshots, screenshots, input).
+const TOOLS = {
+  // Makes its own page, in the foreground unless told otherwise.
+  new_page: {
+    needsPage: false,
+    keepInBackground(args) { if (args.background === true) return false; args.background = true; return true; },
+  },
+  // Can be asked to focus the page.
+  select_page: {
+    keepInBackground(args) { if (!args.bringToFront) return false; args.bringToFront = false; return true; },
+  },
+};
+
+// Resolves to null once Chrome is ready, or to the reason it isn't.
+const ensureChrome = needsPage => new Promise(resolve => {
   // Its own process group, so a timeout can stop it and everything it started
   // (lockf and the locked re-run) — but not Chrome, which LaunchServices owns.
-  const child = spawn(path.join(DIR, 'ensure-chrome.sh'), {
+  const child = spawn(path.join(DIR, 'ensure-chrome.sh'), needsPage ? ['--need-page'] : [], {
     stdio: ['ignore', 'ignore', 'pipe'],
     detached: true,
-    env: { ...process.env, CHROME_MCP_TOOL: tool },
   });
   let stderr = '';
   child.stderr.on('data', d => { stderr += d; });
@@ -76,29 +92,19 @@ const refusal = (id, reason) => ({
   result: { isError: true, content: [{ type: 'text', text: `Shared Chrome is unavailable: ${reason}` }] },
 });
 
-// Tool arguments that would bring Chrome to the front: new_page opens in the
-// foreground unless told otherwise, and select_page can be asked to focus.
-// Every page stays usable in the background (snapshots, screenshots, input).
-function keepInBackground(params) {
-  const args = params.arguments;
-  if (!args) return false;
-  if (params.name === 'new_page' && args.background !== true) { args.background = true; return true; }
-  if (params.name === 'select_page' && args.bringToFront) { args.bringToFront = false; return true; }
-  return false;
-}
-
 async function relay(line) {
   let msg;
   try { msg = JSON.parse(line); } catch { msg = null; }
   if (msg && msg.method === 'tools/call') {
     const params = msg.params || {};
-    const reason = await ensureChrome(params.name || '');
+    const tool = Object.hasOwn(TOOLS, params.name) ? TOOLS[params.name] : {};
+    const reason = await ensureChrome(tool.needsPage !== false);
     if (reason) {
       log(`tool call refused: ${reason}`);
       send(JSON.stringify(refusal(msg.id, reason)));
       return;
     }
-    if (keepInBackground(params)) line = JSON.stringify(msg);
+    if (params.arguments && tool.keepInBackground?.(params.arguments)) line = JSON.stringify(msg);
   }
   server.stdin.write(line + '\n');
 }

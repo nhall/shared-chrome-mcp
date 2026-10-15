@@ -2,12 +2,14 @@
 # Make sure the shared, debuggable Chrome is running; launch it if not.
 # Exits 0 once Chrome answers on the port, 1 (with a reason on stderr) if not.
 #
-# Called by lazy-launch.cjs right before a browser tool call (whose name it
-# passes in CHROME_MCP_TOOL), so Chrome only opens when a session actually uses
-# it. Chrome is detached, so it outlives the session that launched it — quit it
+#   ensure-chrome.sh [--need-page]
+#
+# Called by lazy-launch.cjs right before a browser tool call, so Chrome only
+# opens when a session actually uses it. --need-page: the tool acts on an
+# existing page, so make sure there is one. Chrome is detached, so it outlives the session that launched it — quit it
 # like any app and the next tool call relaunches it.
 #
-# Env overrides: CHROME_MCP_PORT, CHROME_MCP_PROFILE, CHROME_MCP_CHROME (Chrome binary).
+# Overrides: CHROME_MCP_PORT, CHROME_MCP_PROFILE, CHROME_MCP_CHROME (see common.sh).
 
 set -u
 DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -18,10 +20,10 @@ LOG="$DIR/wrapper.log"
 log() { echo "$(date '+%F %T') [$$] $*" >> "$LOG"; }
 fail() { log "$1"; echo "$1 (see $LOG)" >&2; exit 1; }
 
-# Tools like navigate_page act on an existing page, and Chrome can be running
-# with none (launched without a window, or the user closed them all). new_page
-# makes its own, so it doesn't need one.
-needs_page() { [ "${CHROME_MCP_TOOL:-}" != "new_page" ]; }
+# Chrome can be running with no page (launched without a window, or the user
+# closed them all).
+NEED_PAGE=false; [ "${1:-}" = "--need-page" ] && NEED_PAGE=true
+needs_page() { [ "$NEED_PAGE" = true ]; }
 has_page() { curl -s -m 1 "http://127.0.0.1:$PORT/json/list" | jq -e 'any(.[]; .type == "page")' >/dev/null; }
 ready() { chrome_answers && port_is_ours && { ! needs_page || has_page; }; }
 
@@ -46,7 +48,7 @@ ready && exit 0
 # exits, so a crashed launcher can't leave a stale lock behind, and the
 # processes it starts don't inherit it. -s: our own message explains a timeout.
 if [ -z "${CHROME_MCP_LOCKED:-}" ]; then
-  CHROME_MCP_LOCKED=1 /usr/bin/lockf -s -k -t 30 "$LOCK" "$0"
+  CHROME_MCP_LOCKED=1 /usr/bin/lockf -s -k -t 30 "$LOCK" "$0" "$@"
   rc=$?
   [ "$rc" -eq 75 ] && fail "timed out waiting for another session to launch Chrome"
   exit "$rc"
@@ -72,7 +74,7 @@ fi
 
 if ! chrome_answers; then
   mkdir -p "$PROFILE"
-  log "launching shared Chrome on $PORT"
+  log "$LAUNCH_MARK on $PORT"
   ARGS=(--remote-debugging-port="$PORT" --remote-debugging-address=127.0.0.1
     --user-data-dir="$PROFILE" --no-first-run --no-default-browser-check)
   # The innermost .app bundle the binary is in, used only if the binary is

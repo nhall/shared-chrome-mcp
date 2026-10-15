@@ -1,6 +1,6 @@
 // Verifies the installed wrapper: several independent MCP "sessions" share one
 // Chrome. Each session is a separate wrapper process speaking MCP over stdio,
-// exactly as a Claude Code session would run it.
+// exactly as an MCP client session (Claude Code, Codex, …) would run it.
 //
 //   node test/verify.cjs   (or test/verify.sh)
 //
@@ -9,28 +9,21 @@
 // quits a Chrome it launched itself, and only while nothing else has tabs open.
 
 const { spawn, execFile, execFileSync } = require('child_process');
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
 
-const WRAPPER = process.env.WRAPPER || `${os.homedir()}/.claude/chrome-mcp/chrome-mcp-shared.sh`;
-const COMMON = path.join(path.dirname(WRAPPER), 'common.sh');
-
-// Test what Claude Code runs: the overrides the server was registered with
-// (unless this shell sets them), and the port that results from them.
-try {
-  const env = JSON.parse(fs.readFileSync(`${os.homedir()}/.claude.json`, 'utf8')).mcpServers?.['chrome-devtools']?.env || {};
-  for (const k of ['CHROME_MCP_PORT', 'CHROME_MCP_PROFILE', 'CHROME_MCP_CHROME']) if (env[k] && !process.env[k]) process.env[k] = env[k];
-} catch {}
+const COMMON = path.join(__dirname, '../bin/common.sh');
 const fromCommon = fn => execFileSync('bash', ['-c', `. "$1" && ${fn}`, '_', COMMON]).toString();
-const PORT = fromCommon('echo "$PORT"').trim();
+
+// The overrides install.sh saved apply here as they do for every client.
+const [PORT, INSTALL_DIR] = fromCommon('printf "%s\\n" "$PORT" "$INSTALL_DIR"').split('\n');
+const WRAPPER = path.join(INSTALL_DIR, 'chrome-mcp-shared.sh');
 const BASE = `http://127.0.0.1:${PORT}`;
 const TAG = `verify-${process.pid}`;
 
 const sessions = [];
 function session(name) {
   // Its own process group, so close() can signal the whole group the way a
-  // session's processes may be torn down when Claude Code exits.
+  // session's processes may be torn down when its client exits.
   const p = spawn(WRAPPER, [], { stdio: ['pipe', 'pipe', 'pipe'], detached: true });
   let buf = '', id = 0, err = '';
   const waits = {};
@@ -73,8 +66,7 @@ function session(name) {
 }
 
 // Launches recorded by ensure-chrome.sh, to count how often Chrome was started.
-const LOG = path.join(path.dirname(WRAPPER), 'wrapper.log');
-const launches = () => { try { return fs.readFileSync(LOG, 'utf8').split('\n').filter(l => l.includes('launching shared Chrome')).length; } catch { return 0; } };
+const launches = () => Number(fromCommon('launch_count'));
 const chromeUp = async () => { try { await fetch(`${BASE}/json/version`); return true; } catch { return false; } };
 // PIDs of the shared Chrome's main process, using the installed common.sh.
 const sharedChromePids = () => fromCommon('shared_chrome_pids').split('\n').filter(Boolean);

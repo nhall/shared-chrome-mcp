@@ -10,13 +10,14 @@
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO="$(cd "$DIR/.." && pwd)"
+. "$REPO/bin/common.sh"
 results=()
 status=0
 
 # The installed copy must match the repo, or verify/e2e test stale code.
 stale=""
 for f in "$REPO"/bin/*; do
-  cmp -s "$f" "$HOME/.claude/chrome-mcp/$(basename "$f")" || stale+=" $(basename "$f")"
+  cmp -s "$f" "$INSTALL_DIR/$(basename "$f")" || stale+=" $(basename "$f")"
 done
 if [ -n "$stale" ]; then
   echo "installed files differ from the repo:$stale — run ./install.sh first"
