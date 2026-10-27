@@ -20,7 +20,7 @@
 
 set -euo pipefail
 
-MCP_VERSION="${MCP_VERSION:-1.9.0}"
+MCP_VERSION="${MCP_VERSION:-1.12.0}"
 DENY_RULE="mcp__plugin_chrome-devtools-mcp_chrome-devtools"
 REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 . "$REPO_DIR/bin/common.sh"

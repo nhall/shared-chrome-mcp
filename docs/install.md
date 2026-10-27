@@ -52,7 +52,7 @@ override, delete its line.
 | `CHROME_MCP_PORT` | `9333` |
 | `CHROME_MCP_PROFILE` | `~/.cache/chrome-mcp-shared/profile` |
 | `CHROME_MCP_CHROME` | `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome` |
-| `MCP_VERSION` (install only) | `1.9.0` |
+| `MCP_VERSION` (install only) | `1.12.0` |
 
 ## Upgrading chrome-devtools-mcp
 
@@ -67,7 +67,7 @@ release of this wrapper was tested with is in [CHANGELOG.md](../CHANGELOG.md).
 mkdir -p ~/.local/share/shared-chrome-mcp
 install -m 0755 bin/chrome-mcp-shared.sh bin/ensure-chrome.sh ~/.local/share/shared-chrome-mcp/
 install -m 0644 bin/lazy-launch.cjs bin/common.sh ~/.local/share/shared-chrome-mcp/
-npm install --prefix ~/.local/share/shared-chrome-mcp chrome-devtools-mcp@1.9.0
+npm install --prefix ~/.local/share/shared-chrome-mcp chrome-devtools-mcp@1.12.0
 claude mcp add --scope user chrome-devtools -- ~/.local/share/shared-chrome-mcp/chrome-mcp-shared.sh
 ```
 
