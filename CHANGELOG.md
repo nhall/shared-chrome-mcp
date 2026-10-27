@@ -8,6 +8,8 @@ Each release lists the `chrome-devtools-mcp` version it was tested with.
 
 ## [Unreleased]
 
+- Pin `chrome-devtools-mcp` 1.12.0 (was 1.9.0).
+
 ## [1.0.0]
 
 Tested with `chrome-devtools-mcp` 1.9.0.
