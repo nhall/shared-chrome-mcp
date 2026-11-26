@@ -8,6 +8,10 @@ Each release lists the `chrome-devtools-mcp` version it was tested with.
 
 ## [Unreleased]
 
+## [1.0.1]
+
+Tested with `chrome-devtools-mcp` 1.14.0.
+
 - Pin `chrome-devtools-mcp` 1.14.0 (was 1.9.0).
 
 ## [1.0.0]
@@ -33,5 +37,6 @@ First release.
 - Test suite: raw MCP sessions, sandboxed install/uninstall, and real
   `claude -p` sessions.
 
-[Unreleased]: https://github.com/nhall/shared-chrome-mcp/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/nhall/shared-chrome-mcp/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/nhall/shared-chrome-mcp/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/nhall/shared-chrome-mcp/releases/tag/v1.0.0
